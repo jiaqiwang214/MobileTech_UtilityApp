@@ -53,7 +53,7 @@ fun UtilityAppPreview() {
 @Composable
 fun UtilityApp() {
     var selectedTab by remember { mutableStateOf("Utility") }
-    var useFahrenheit by remember { mutableStateOf(false) }
+    val weatherViewModel = remember { WeatherViewModel() }
 
     Scaffold(
         bottomBar = {
@@ -75,10 +75,10 @@ fun UtilityApp() {
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                "Utility" -> UtilityScreen(useFahrenheit)
+                "Utility" -> UtilityScreen(weatherViewModel)
                 "Settings" -> SettingsScreen(
-                    useFahrenheit = useFahrenheit,
-                    onUnitChange = { useFahrenheit = it }
+                    useFahrenheit = weatherViewModel.useFahrenheit,
+                    onUnitChange = { weatherViewModel.setTemperatureUnit(it) }
                 )
             }
         }
@@ -86,7 +86,8 @@ fun UtilityApp() {
 }
 
 @Composable
-fun UtilityScreen(useFahrenheit: Boolean) {
+fun UtilityScreen(viewModel: WeatherViewModel) {
+    val useFahrenheit = viewModel.useFahrenheit
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -99,26 +100,32 @@ fun UtilityScreen(useFahrenheit: Boolean) {
         )
 
         Text(
-            text = "Singapore",
+            text = viewModel.city,
             style = MaterialTheme.typography.titleLarge
         )
 
         Text(
-            text = if (useFahrenheit) "☀️ 86°F" else "☀️ 30°C",
+            text = if (useFahrenheit)
+                "☀️ ${viewModel.temperature * 9 / 5 + 32}°F"
+            else
+                "☀️ ${viewModel.temperature}°C",
             style = MaterialTheme.typography.displayMedium
         )
 
         Text(
-            text = "Partly Cloudy",
+            text = viewModel.condition,
             style = MaterialTheme.typography.titleMedium
         )
 
         Text(
-            if (useFahrenheit) "Feels like: 93°F" else "Feels like: 34°C"
+            if (useFahrenheit)
+                "Feels like: ${viewModel.feelsLike * 9 / 5 + 32}°F"
+            else
+                "Feels like: ${viewModel.feelsLike}°C"
         )
 
-        Text("Humidity: 75%")
-        Text("Wind: 12 km/h")
+        Text("Humidity: ${viewModel.humidity}%")
+        Text("Wind: ${viewModel.windSpeed} km/h")
     }
 }
 
