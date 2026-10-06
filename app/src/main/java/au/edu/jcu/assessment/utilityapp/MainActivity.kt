@@ -7,12 +7,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -25,6 +29,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -88,6 +93,7 @@ fun UtilityApp() {
 @Composable
 fun UtilityScreen(viewModel: WeatherViewModel) {
     val useFahrenheit = viewModel.useFahrenheit
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -104,43 +110,65 @@ fun UtilityScreen(viewModel: WeatherViewModel) {
             style = MaterialTheme.typography.titleLarge
         )
 
-        Text(
-            text = if (useFahrenheit)
-                "☀️ ${viewModel.temperature * 9 / 5 + 32}°F"
-            else
-                "☀️ ${viewModel.temperature}°C",
-            style = MaterialTheme.typography.displayMedium
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "☀️",
+                        style = MaterialTheme.typography.displayMedium
+                    )
 
-        Text(
-            text = viewModel.condition,
-            style = MaterialTheme.typography.titleMedium
-        )
+                    Text(
+                        text = if (useFahrenheit)
+                            "${"%.1f".format(viewModel.temperature * 9 / 5 + 32)}°F"
+                        else
+                            "${"%.1f".format(viewModel.temperature)}°C",
+                        style = MaterialTheme.typography.displayMedium
+                    )
+                }
 
-        Text(
-            if (useFahrenheit)
-                "Feels like: ${viewModel.feelsLike * 9 / 5 + 32}°F"
-            else
-                "Feels like: ${viewModel.feelsLike}°C"
-        )
+                Text(
+                    text = viewModel.condition,
+                    style = MaterialTheme.typography.titleMedium
+                )
 
-        Text("Humidity: ${viewModel.humidity}%")
-        Text("Wind: ${viewModel.windSpeed} km/h")
-            if (viewModel.isLoading) {
+                Text(
+                    text = if (useFahrenheit)
+                        "Feels like: ${viewModel.feelsLike * 9 / 5 + 32}°F"
+                    else
+                        "Feels like: ${viewModel.feelsLike}°C"
+                )
+
+                Text("Humidity: ${viewModel.humidity}%")
+                Text("Wind: ${viewModel.windSpeed} km/h")
+            }
+        }
+
+        if (viewModel.isLoading) {
             Text("Updating weather...")
         }
 
-            if (viewModel.errorMessage != null) {
+        if (viewModel.errorMessage != null) {
             Text(viewModel.errorMessage!!)
         }
 
         Button(
             onClick = { viewModel.loadWeather() },
-            enabled = !viewModel.isLoading
+            enabled = !viewModel.isLoading,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                if (viewModel.isLoading) "Updating..."
-                else "Refresh Weather"
+                if (viewModel.isLoading)
+                    "Updating..."
+                else
+                    "Refresh Weather"
             )
         }
     }
@@ -155,7 +183,7 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Text(
             text = "Settings",
@@ -164,23 +192,40 @@ fun SettingsScreen(
 
         Text(
             text = "Temperature Unit",
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleLarge
         )
 
-        Button(
-            onClick = { onUnitChange(false) }
+        Card(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                if (!useFahrenheit) "✓ Celsius (°C)" else "Celsius (°C)"
-            )
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = if (useFahrenheit)
+                        "Current unit: Fahrenheit (°F)"
+                    else
+                        "Current unit: Celsius (°C)"
+                )
+
+                Button(
+                    onClick = { onUnitChange(!useFahrenheit) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        if (useFahrenheit)
+                            "Switch to Celsius"
+                        else
+                            "Switch to Fahrenheit"
+                    )
+                }
+            }
         }
 
-        Button(
-            onClick = { onUnitChange(true) }
-        ) {
-            Text(
-                if (useFahrenheit) "✓ Fahrenheit (°F)" else "Fahrenheit (°F)"
-            )
-        }
+        Text(
+            text = "Weather data for Singapore",
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
