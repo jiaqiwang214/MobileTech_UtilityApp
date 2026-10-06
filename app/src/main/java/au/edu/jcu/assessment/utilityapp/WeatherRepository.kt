@@ -5,24 +5,38 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class WeatherRepository {
 
-    private val api: WeatherApiService
+    private val weatherApi: WeatherApiService
+    private val geocodingApi: GeocodingApiService
 
     init {
-        val retrofit = Retrofit.Builder()
+        val weatherRetrofit = Retrofit.Builder()
             .baseUrl("https://api.open-meteo.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        api = retrofit.create(WeatherApiService::class.java)
+        weatherApi = weatherRetrofit.create(WeatherApiService::class.java)
+
+        val geocodingRetrofit = Retrofit.Builder()
+            .baseUrl("https://geocoding-api.open-meteo.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        geocodingApi =
+            geocodingRetrofit.create(GeocodingApiService::class.java)
     }
 
     suspend fun getWeather(
         latitude: Double,
         longitude: Double
     ): WeatherResponse {
-        return api.getWeather(
+        return weatherApi.getWeather(
             latitude = latitude,
             longitude = longitude
         )
+    }
+
+    suspend fun searchCity(cityName: String): LocationResult? {
+        val response = geocodingApi.searchCity(cityName)
+        return response.results?.firstOrNull()
     }
 }

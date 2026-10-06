@@ -3,20 +3,27 @@ package au.edu.jcu.assessment.utilityapp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
-class WeatherViewModel : ViewModel() {
+class WeatherViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = WeatherRepository()
+    private val settingsRepository = SettingsRepository(application)
 
-    var useFahrenheit by mutableStateOf(false)
+    var useFahrenheit by mutableStateOf(
+        settingsRepository.getTemperatureUnit()
+    )
         private set
 
     var city by mutableStateOf("Singapore")
         private set
 
+    fun updateCity(newCity: String) {
+        city = newCity
+    }
     var temperature by mutableStateOf(0.0)
         private set
 
@@ -48,11 +55,19 @@ class WeatherViewModel : ViewModel() {
             errorMessage = null
 
             try {
+                val location = repository.searchCity(city)
+
+                if (location == null) {
+                    errorMessage = "City not found"
+                    return@launch
+                }
+
                 val response = repository.getWeather(
-                    latitude = 1.3521,
-                    longitude = 103.8198
+                    latitude = location.latitude,
+                    longitude = location.longitude
                 )
 
+                city = location.name
                 temperature = response.current.temperature
                 feelsLike = response.current.feelsLike
                 humidity = response.current.humidity
@@ -71,8 +86,9 @@ class WeatherViewModel : ViewModel() {
         }
     }
 
-    fun setTemperatureUnit(useFahrenheit: Boolean) {
+     fun setTemperatureUnit(useFahrenheit: Boolean) {
         this.useFahrenheit = useFahrenheit
+        settingsRepository.saveTemperatureUnit(useFahrenheit)
     }
 
     private fun getWeatherCondition(code: Int): String {
