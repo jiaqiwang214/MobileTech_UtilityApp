@@ -126,6 +126,23 @@ fun UtilityScreen(viewModel: WeatherViewModel) {
 
         Text("Humidity: ${viewModel.humidity}%")
         Text("Wind: ${viewModel.windSpeed} km/h")
+            if (viewModel.isLoading) {
+            Text("Updating weather...")
+        }
+
+            if (viewModel.errorMessage != null) {
+            Text(viewModel.errorMessage!!)
+        }
+
+        Button(
+            onClick = { viewModel.loadWeather() },
+            enabled = !viewModel.isLoading
+        ) {
+            Text(
+                if (viewModel.isLoading) "Updating..."
+                else "Refresh Weather"
+            )
+        }
     }
 }
 
