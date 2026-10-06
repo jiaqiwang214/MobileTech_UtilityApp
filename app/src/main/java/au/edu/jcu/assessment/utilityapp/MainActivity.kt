@@ -53,6 +53,7 @@ fun UtilityAppPreview() {
 @Composable
 fun UtilityApp() {
     var selectedTab by remember { mutableStateOf("Utility") }
+    var useFahrenheit by remember { mutableStateOf(false) }
 
     Scaffold(
         bottomBar = {
@@ -74,15 +75,18 @@ fun UtilityApp() {
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                "Utility" -> UtilityScreen()
-                "Settings" -> SettingsScreen()
+                "Utility" -> UtilityScreen(useFahrenheit)
+                "Settings" -> SettingsScreen(
+                    useFahrenheit = useFahrenheit,
+                    onUnitChange = { useFahrenheit = it }
+                )
             }
         }
     }
 }
 
 @Composable
-fun UtilityScreen() {
+fun UtilityScreen(useFahrenheit: Boolean) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,7 +104,7 @@ fun UtilityScreen() {
         )
 
         Text(
-            text = "☀️ 30°C",
+            text = if (useFahrenheit) "☀️ 86°F" else "☀️ 30°C",
             style = MaterialTheme.typography.displayMedium
         )
 
@@ -109,20 +113,50 @@ fun UtilityScreen() {
             style = MaterialTheme.typography.titleMedium
         )
 
-        Text("Feels like: 34°C")
+        Text(
+            if (useFahrenheit) "Feels like: 93°F" else "Feels like: 34°C"
+        )
+
         Text("Humidity: 75%")
         Text("Wind: 12 km/h")
     }
 }
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    useFahrenheit: Boolean,
+    onUnitChange: (Boolean) -> Unit
+) {
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp), Arrangement.spacedBy(16.dp)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Settings Screen", style = MaterialTheme.typography.headlineMedium)
-        Text("This is where you can add toggles or preferences.")
+        Text(
+            text = "Settings",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Text(
+            text = "Temperature Unit",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Button(
+            onClick = { onUnitChange(false) }
+        ) {
+            Text(
+                if (!useFahrenheit) "✓ Celsius (°C)" else "Celsius (°C)"
+            )
+        }
+
+        Button(
+            onClick = { onUnitChange(true) }
+        ) {
+            Text(
+                if (useFahrenheit) "✓ Fahrenheit (°F)" else "Fahrenheit (°F)"
+            )
+        }
     }
 }
